@@ -24,6 +24,16 @@ def home_page_view(request):
 
 
 def create_profile_view(request):
+    if Profile.objects.exists():
+        profile = Profile.objects.all()[0]
+        expenses = Expense.objects.all()
+        sum_left = profile.budget - sum([x.price for x in expenses])
+        context = {
+            "profile": profile,
+            "sum_left": sum_left
+        }
+        return render(request, 'profile.html', context)
+
     if request.GET:
         context = {
             "form": ProfileForm()
@@ -42,10 +52,23 @@ def create_profile_view(request):
     return render(request, 'home-with-profile.html')
 
 
-def edit_profile_view():
-    pass
+def edit_profile_view(request):
+    profile = Profile.objects.all()[0]
+    context = {
+        "form": ProfileForm(instance=profile)
+    }
+    if request.POST:
+        form = ProfileForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            return redirect('home page')
+
+        return render(request, 'profile-edit.html', context)
+    return render(request, 'profile-edit.html', context)
 
 
 def delete_profile_view():
-    pass
+    expenses = Expense.objects.all()
+    profile = Profile.objects.all()
+    
 
